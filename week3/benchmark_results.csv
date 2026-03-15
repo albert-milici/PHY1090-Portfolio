@@ -1,0 +1,11 @@
+version,vector_size,real_time
+serial,1000,0m0.001s
+parallel_4,1000,0m0.780s
+serial,10000,0m0.001s
+parallel_4,10000,0m0.735s
+serial,100000,0m0.001s
+parallel_4,100000,0m0.753s
+serial,1000000,0m0.004s
+parallel_4,1000000,0m0.834s
+serial,10000000,0m0.032s
+parallel_4,10000000,0m0.797s
