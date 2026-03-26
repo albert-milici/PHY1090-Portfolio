@@ -95,7 +95,7 @@ void root_task(int num_pings, int num_elements)
 }
 
 void client_task(int num_pings, int num_elements)
-
+{
 	// creates and initialises transmission variables
 	int count, root_rank, tag;
 	tag = 0;
