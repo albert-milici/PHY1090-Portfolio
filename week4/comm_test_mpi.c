@@ -6,6 +6,7 @@
 int root_task(int my_rank, int uni_size);
 int client_task(int my_rank, int uni_size);
 int check_uni_size(int my_rank, int uni_size);
+int check_task(int my_rank, int uni_size);
 
 int main(int argc, char **argv) 
 {
@@ -23,8 +24,11 @@ int main(int argc, char **argv)
 	ierror = MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
 	ierror = MPI_Comm_size(MPI_COMM_WORLD,&uni_size);
 
-	// checks the universe size is correct and dispatches tasks
+	// checks the universe size is correct
 	check_uni_size(my_rank, uni_size);
+
+	// checks what task to do and does it
+	check_task(my_rank, uni_size);
 
 	// finalise MPI
 	ierror = MPI_Finalize();
@@ -79,31 +83,38 @@ int client_task(int my_rank, int uni_size)
 	return 0;
 }
 
+
 int check_uni_size(int my_rank, int uni_size)
 {
 	// sets the minimum uni size
 	int min_uni_size = 2;
 
-	// checks there are enough tasks to communicate with
+	// checks there are sufficient tasks to communicate with
 	if (uni_size >= min_uni_size)
 	{
-		// checks which process is running and calls the appropriate task
-		if (0 == my_rank)
-		{
-			root_task(my_rank, uni_size);
-		} // end if (0 == my_rank)
-		else // i.e. (0 != my_rank)
-		{
-			client_task(my_rank, uni_size);
-		} // end else // i.e. (0 != my_rank)
+		return 0;
 	} // end if (uni_size >= min_uni_size)
 	else // i.e. uni_size < min_uni_size
 	{
 		// raise an error
 		printf("Unable to communicate with less than 2 processes. MPI communicator size = %d\n", uni_size);
 
-		// and exit
+		// and exit 
 		exit(-1);
 	}
+	return 0;
+}
+
+int check_task(int my_rank, int uni_size)
+{
+	// checks which process is running and calls the appropriate task
+	if (0 == my_rank)
+	{
+		root_task(my_rank, uni_size);
+	} // end if (0 == my_rank)
+	else // i.e. (0 != my_rank)
+	{
+		client_task(my_rank, uni_size);
+	} // end else // i.e. (0 != my_rank)
 	return 0;
 }
