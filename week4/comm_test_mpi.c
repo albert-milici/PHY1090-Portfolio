@@ -3,10 +3,10 @@
 #include <mpi.h>
 
 // function declarations
-int root_task(int my_rank, int uni_size);
-int client_task(int my_rank, int uni_size);
-int check_uni_size(int my_rank, int uni_size);
-int check_task(int my_rank, int uni_size);
+void root_task(int my_rank, int uni_size);
+void client_task(int my_rank, int uni_size);
+void check_uni_size(int my_rank, int uni_size);
+void check_task(int my_rank, int uni_size);
 
 int main(int argc, char **argv) 
 {
@@ -21,8 +21,8 @@ int main(int argc, char **argv)
 	ierror = MPI_Init(&argc, &argv);
 
 	// gets the rank and world size
-	ierror = MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
-	ierror = MPI_Comm_size(MPI_COMM_WORLD,&uni_size);
+	ierror = MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+	ierror = MPI_Comm_size(MPI_COMM_WORLD, &uni_size);
 
 	// checks the universe size is correct
 	check_uni_size(my_rank, uni_size);
@@ -35,9 +35,9 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-int root_task(int my_rank, int uni_size)
+void root_task(int my_rank, int uni_size)
 {
-	// creates and initialies transmission variables
+	// creates and initialises transmission variables
 	int recv_message, count, source, tag;
 	recv_message = source = tag = 0;
 	count = 1;
@@ -56,13 +56,11 @@ int root_task(int my_rank, int uni_size)
 		printf("Hello, I am %d of %d. Received %d from Rank %d\n",
 				my_rank, uni_size, recv_message, source);
 	} // end for (int their_rank = 1; their_rank < uni_size; their_rank++)
-
-	return 0;
 }
 
-int client_task(int my_rank, int uni_size)
+void client_task(int my_rank, int uni_size)
 {
-	// creates and initialies transmission variables
+	// creates and initialises transmission variables
 	int send_message, count, dest, tag;
 	send_message = dest = tag = 0;
 	count = 1;
@@ -79,12 +77,9 @@ int client_task(int my_rank, int uni_size)
 	// prints the message from the sender
 	printf("Hello, I am %d of %d. Sent %d to Rank %d\n",
 			my_rank, uni_size, send_message, dest);
-
-	return 0;
 }
 
-
-int check_uni_size(int my_rank, int uni_size)
+void check_uni_size(int my_rank, int uni_size)
 {
 	// sets the minimum uni size
 	int min_uni_size = 2;
@@ -92,20 +87,19 @@ int check_uni_size(int my_rank, int uni_size)
 	// checks there are sufficient tasks to communicate with
 	if (uni_size >= min_uni_size)
 	{
-		return 0;
+		return;
 	} // end if (uni_size >= min_uni_size)
 	else // i.e. uni_size < min_uni_size
 	{
 		// raise an error
 		printf("Unable to communicate with less than 2 processes. MPI communicator size = %d\n", uni_size);
 
-		// and exit 
+		// and exit
 		exit(-1);
 	}
-	return 0;
 }
 
-int check_task(int my_rank, int uni_size)
+void check_task(int my_rank, int uni_size)
 {
 	// checks which process is running and calls the appropriate task
 	if (0 == my_rank)
@@ -116,5 +110,4 @@ int check_task(int my_rank, int uni_size)
 	{
 		client_task(my_rank, uni_size);
 	} // end else // i.e. (0 != my_rank)
-	return 0;
 }
