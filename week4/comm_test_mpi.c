@@ -47,18 +47,30 @@ void root_task(int my_rank, int uni_size)
 	count = 1;
 	MPI_Status status;
 
+	// creates and initialises the timing variables
+	struct timespec start_time, end_time, time_diff;
+	double runtime = 0.0;
+
 	// iterates through all the other ranks
 	for (int their_rank = 1; their_rank < uni_size; their_rank++)
 	{
 		// sets the source argument to the rank of the sender
 		source = their_rank;
 
+		// gets the time before the receive
+		timespec_get(&start_time, TIME_UTC);
 		// receives the messages
 		MPI_Recv(&recv_message, count, MPI_INT, source, tag, MPI_COMM_WORLD, &status);
+		// gets the time after the receive
+		timespec_get(&end_time, TIME_UTC);
 
-		// prints the message from the sender
-		printf("Hello, I am %d of %d. Received %d from Rank %d\n",
-				my_rank, uni_size, recv_message, source);
+		// calculates the runtime
+		time_diff = calculate_runtime(start_time, end_time);
+		runtime = to_second_float(time_diff);
+
+		// prints the message from the sender and the runtime
+		printf("Hello, I am %d of %d. Received %d from Rank %d in %lf seconds\n",
+				my_rank, uni_size, recv_message, source, runtime);
 	} // end for (int their_rank = 1; their_rank < uni_size; their_rank++)
 }
 
