@@ -95,7 +95,7 @@ void root_task(int num_pings, int num_elements)
 }
 
 void client_task(int num_pings, int num_elements)
-{
+
 	// creates and initialises transmission variables
 	int count, root_rank, tag;
 	tag = 0;
@@ -127,27 +127,24 @@ void client_task(int num_pings, int num_elements)
 	free(array);
 }
 
-int check_args(int argc, char **argv)
+void check_args(int argc, char **argv, int *num_pings, int *array_size_bytes)
 {
-	// declare and initialise the numerical argument
-	int num_arg = 0;
-
 	// check the number of arguments
-	if (argc == 2) // program name and numerical argument
+	if (argc == 3) // program name, num_pings, array_size_bytes
 	{
-		// declare and initialise the numerical argument
-		num_arg = atoi(argv[1]);
+		// converts the arguments to integers
+		*num_pings = atoi(argv[1]);
+		*array_size_bytes = atoi(argv[2]);
 	}
 	else // the number of arguments is incorrect
 	{
 		// raise an error
-		fprintf(stderr, "ERROR: You did not provide a numerical argument!\n");
-		fprintf(stderr, "Correct use: %s [NUM_PINGS]\n", argv[0]);
+		fprintf(stderr, "ERROR: Incorrect number of arguments!\n");
+		fprintf(stderr, "Correct use: %s [NUM_PINGS] [SIZE_BYTES]\n", argv[0]);
 
 		// and exit 
 		exit(-1);
 	}
-	return num_arg;
 }
 
 void check_uni_size(int uni_size)
