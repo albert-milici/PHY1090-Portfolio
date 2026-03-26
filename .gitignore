@@ -1,0 +1,9 @@
+# binary and object files
+bin/
+*.o
+*.out
+a.out
+# python stuff
+__pycache__/
+*.pyc
+*.log
