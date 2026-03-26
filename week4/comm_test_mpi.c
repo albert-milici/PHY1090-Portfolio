@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <mpi.h>
 
 // function declarations
@@ -68,18 +69,30 @@ void client_task(int my_rank, int uni_size)
 	send_message = dest = tag = 0;
 	count = 1;
 
+	// creates and initialises the timing variables
+	struct timespec start_time, end_time, time_diff;
+	double runtime = 0.0;
+
 	// sets the destination for the message
 	dest = 0; // destination is root
 
 	// creates the message
 	send_message = my_rank * 10;
 
+	// gets the time before the send
+	timespec_get(&start_time, TIME_UTC);
 	// sends the message
 	MPI_Send(&send_message, count, MPI_INT, dest, tag, MPI_COMM_WORLD);
+	// gets the time after the send
+	timespec_get(&end_time, TIME_UTC);
 
-	// prints the message from the sender
-	printf("Hello, I am %d of %d. Sent %d to Rank %d\n",
-			my_rank, uni_size, send_message, dest);
+	// calculates the runtime
+	time_diff = calculate_runtime(start_time, end_time);
+	runtime = to_second_float(time_diff);
+
+	// prints the message from the sender and the runtime
+	printf("Hello, I am %d of %d. Sent %d to Rank %d in %lf seconds\n",
+			my_rank, uni_size, send_message, dest, runtime);
 }
 
 void check_uni_size(int my_rank, int uni_size)
