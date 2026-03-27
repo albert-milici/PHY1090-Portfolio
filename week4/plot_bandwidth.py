@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # loads the CSV 
-data = np.genfromtxt('week4/bandwidth_results.csv', delimiter=',', skip_header=1)
+data = np.genfromtxt('week4/output/bandwidth_results.csv', delimiter=',', skip_header=1)
 sizes = data[:, 0]
 avg_times = data[:, 3]
 
@@ -16,13 +16,13 @@ latency = c
 bandwidth = 1.0 / m
 
 
-plt.figure(figsize=(8, 5))
+plt.figure(figsize=(10, 6))
 
 plt.scatter(sizes, avg_times,s=60, label='Measured')
 plt.plot(sizes, m * sizes + c, 'r-', label=f'Fit: t = {m:.2e}*s + {c:.2e}')
 
 plt.xlabel('Message size (bytes)', fontsize=22)
-plt.ylabel('Average time per ping-pong (s)', fontsize=22)
+plt.ylabel('Average time (s)', fontsize=22)
 
 plt.tick_params(axis='both', labelsize=20)
 
@@ -33,7 +33,7 @@ plt.text(0.05, 0.95,
          fontsize=15, bbox=dict(boxstyle='round', facecolor='wheat'))
 
 plt.tight_layout()
-plt.savefig('week4/bandwidth_plot.svg')
+plt.savefig('week4/output/bandwidth_plot.svg')
 plt.show()
 
 print(f"Latency (c): {latency*1e6} us")

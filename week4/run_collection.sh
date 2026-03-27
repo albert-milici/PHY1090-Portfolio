@@ -1,12 +1,19 @@
 #!/bin/bash
 # benchmarks collection methods for vector addition
 
-OUTPUT="week4/collection_results.csv"
+OUTPUT="week4/output/collection_results.csv"
 NP=8
 
-mpicc week4/vector_collect_sendrecv.c -o bin/vector_collect_sendrecv
-mpicc week4/vector_collect_gather.c -o bin/vector_collect_gather
-mpicc week4/vector_collect_reduce.c -o bin/vector_collect_reduce
+# compiles each variant if binary is missing or older than source
+for method in sendrecv gather reduce; do
+
+    SRC="week4/src/vector_collect_$method.c"
+    BIN="bin/vector_collect_$method"
+    if [ ! "$BIN" -nt "$SRC" ]; then
+        echo "Compiling $SRC..."
+        mpicc "$SRC" -o "$BIN"
+    fi
+done
 
 echo "method,vector_size,collect_time_s" > "$OUTPUT"
 
@@ -16,7 +23,7 @@ for size in 1000 10000 100000 1000000 10000000; do
         result=$(mpirun -n $NP ./bin/vector_collect_$method $size)
         collect_time=$(echo "$result" | grep -oP 'time: \K[0-9.]+')
         echo "$method,$size,$collect_time" >> "$OUTPUT"
-
+        
     done
 done
 
