@@ -2,19 +2,22 @@
 
 ## How to build and run
 
+Run bash scripts from the repo root:
+
+```bash
+./week4/run_latency.sh
+```
+
+Note if a script gives a permission error, run `chmod +x week4/*.sh` first.
+
 Compile any C file with `mpicc` and run with `mpirun`:
 
 ```bash
-mpicc week4/pingpong.c -o bin/pingpong
+mpicc week4/src/pingpong.c -o bin/pingpong
 mpirun -n 2 ./bin/pingpong 1000
 ```
 
-Run bash scripts with:
-
-```bash
-chmod +x week4/run_latency.sh
-./week4/run_latency.sh
-```
+The bash scripts handle compilation automatically and only recompile if the source has changed.
 
 Plot bandwidth results with:
 
@@ -114,7 +117,7 @@ As seen in Table 2, the average converges to ~210–230 ns as the number of ping
 
 Ran with sizes from 8 B to 2 MiB using `run_bandwidth.sh`. As the assignment asks, a linear fit t = m × size + c was applied. Communication time has two components, the time to start the communication (latency) and the time to transmit the data (which depends on bandwidth). In the linear formula, c (the intercept) corresponds to latency as it is the fixed time per message at zero payload, and 1/m (the inverse slope) corresponds to bandwidth as it is the data transfer capacity in bytes per second. From the fit, latency = 2.64 μs and bandwidth = 6911 MB/s.
 
-![Bandwidth plot](bandwidth_plot.svg)
+![Bandwidth plot](output/bandwidth_plot.svg)
 
 *Figure 1. Average time per ping-pong vs message size with linear fit*
 
