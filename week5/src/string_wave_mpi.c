@@ -152,7 +152,11 @@ int main(int argc, char **argv)
 	long int nanoseconds = end_time.tv_nsec - start_time.tv_nsec;
 	if (nanoseconds < 0) { seconds--; nanoseconds += 1000000000L; }
 	double elapsed = seconds + nanoseconds / 1e9;
-	printf("Elapsed: %.9lf s\n", elapsed);
+	// only get the root time
+	if (0 == my_rank)
+	{
+    printf("Elapsed: %.9lf s\n", elapsed);
+	}
 
 
 	// frees allocated memory
