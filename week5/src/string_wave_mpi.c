@@ -20,6 +20,7 @@ void initialise_vector(double vector[], int size, double initial);
 int generate_timestamps(double* time_stamps, int time_steps, double step_size);
 double driver(double time);
 void print_header(FILE** p_out_file, int points);
+void update_positions(double* positions, int chunk, double boundary, int my_rank, double time);
 
 int main(int argc, char **argv)
 {
@@ -95,35 +96,8 @@ int main(int argc, char **argv)
 				my_rank - 1, tag, MPI_COMM_WORLD, &status);
 		}
 
-		// creates temporary array for the new positions
-		double* new_positions = (double*) malloc(chunk * sizeof(double));
-
-		// updates first element of chunk
-		if (0 == my_rank)
-		{
-			// rank 0 drives point 0 with the sine function
-			new_positions[0] = driver(time_stamps[i]);
-		}
-		else
-		{
-			// other ranks use the boundary value from previous chunk
-			new_positions[0] = boundary;
-		}
-
-		// updates remaining elements (each takes previous value of left neighbour)
-		for (int j = 1; j < chunk; j++)
-		{
-			new_positions[j] = local_positions[j - 1];
-		}
-
-		// copies new positions back to local positions
-		for (int j = 0; j < chunk; j++)
-		{
-			local_positions[j] = new_positions[j];
-		}
-
-		// frees the temporary array
-		free(new_positions);
+		// updates positions for this timestep
+		update_positions(local_positions, chunk, boundary, my_rank, time_stamps[i]);
 
 		// gathers all local chunks to root in rank order
 		MPI_Gather(local_positions, chunk, MPI_DOUBLE,
@@ -171,6 +145,40 @@ int main(int argc, char **argv)
 	// finalise MPI
 	ierror = MPI_Finalize();
 	return 0;
+}
+
+// defines a function to update the positions
+void update_positions(double* positions, int chunk, double boundary, int my_rank, double time)
+{
+	// creates a temporary vector variable for the new positions
+	double* new_positions = (double*) malloc(chunk * sizeof(double));
+
+	// updates first element of chunk
+	if (0 == my_rank)
+	{
+		// rank 0 drives point 0 with the sine function
+		new_positions[0] = driver(time);
+	}
+	else
+	{
+		// other ranks use the boundary value from previous chunk
+		new_positions[0] = boundary;
+	}
+
+	// updates remaining elements (each takes previous value of left neighbour)
+	for (int j = 1; j < chunk; j++)
+	{
+		new_positions[j] = positions[j - 1];
+	}
+
+	// copies new positions back to positions
+	for (int j = 0; j < chunk; j++)
+	{
+		positions[j] = new_positions[j];
+	}
+
+	// frees the temporary array
+	free(new_positions);
 }
 
 // prints a header to the file
