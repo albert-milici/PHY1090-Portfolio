@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 // struct to hold parsed command line arguments
 typedef struct {
@@ -47,6 +48,9 @@ int main(int argc, char **argv)
 	out_file = fopen(args.output_path, "w");
 	print_header(&out_file, args.points);
 
+	struct timespec start_time, end_time;
+	timespec_get(&start_time, TIME_UTC);
+
 	// iterates through each time step in the collection
 	for (int i = 0; i < time_steps; i++)
 	{
@@ -65,6 +69,13 @@ int main(int argc, char **argv)
 		// prints a new line
 		fprintf(out_file, "\n");
 	}
+
+	timespec_get(&end_time, TIME_UTC);
+	long int seconds = end_time.tv_sec - start_time.tv_sec;
+	long int nanoseconds = end_time.tv_nsec - start_time.tv_nsec;
+	if (nanoseconds < 0) { seconds--; nanoseconds += 1000000000L; }
+	double elapsed = seconds + nanoseconds / 1e9;
+	printf("Elapsed: %.9lf s\n", elapsed);
 
 	// if we use malloc, must free when done!
 	free(time_stamps);

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <mpi.h>
+#include <time.h>
 
 // struct to hold parsed command line arguments
 typedef struct {
@@ -73,6 +74,10 @@ int main(int argc, char **argv)
 	MPI_Status status;
 	double boundary = 0.0;
 
+	// start timing
+	struct timespec start_time, end_time;
+	timespec_get(&start_time, TIME_UTC);
+
 	// iterates through each time step
 	for (int i = 0; i < time_steps; i++)
 	{
@@ -140,6 +145,15 @@ int main(int argc, char **argv)
 			fprintf(out_file, "\n");
 		}
 	}
+
+	// finish timing
+	timespec_get(&end_time, TIME_UTC);
+	long int seconds = end_time.tv_sec - start_time.tv_sec;
+	long int nanoseconds = end_time.tv_nsec - start_time.tv_nsec;
+	if (nanoseconds < 0) { seconds--; nanoseconds += 1000000000L; }
+	double elapsed = seconds + nanoseconds / 1e9;
+	printf("Elapsed: %.9lf s\n", elapsed);
+
 
 	// frees allocated memory
 	free(time_stamps);
