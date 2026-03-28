@@ -6,4 +6,5 @@ a.out
 # python stuff
 __pycache__/
 *.pyc
-*.log
+*.logdata/
+data/
