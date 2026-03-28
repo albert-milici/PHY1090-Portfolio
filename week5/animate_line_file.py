@@ -9,26 +9,6 @@ import random
 from pathlib import Path
 import sys
 
-def generate_path(home_folder = str(Path.home()), subfolder = '/data/', basename = 'output', extension = 'txt'):
-    """This function creates the path to store the data. Note that the data is not 
-    stored in the directory the code is executed in. This prevents git repos 
-    from becoming cluttered with data that should be separate.
-
-    Keyword Args:
-        home_folder (str): the root folder in which the file is specified
-            Defaults to Home
-        subfolder (str): the subfolder in which the file is specified
-            Defaults to /data/
-        basename (str): the base of the filename to be specified
-            Defaults to output
-        extension (str): the file type to be specified
-            Defaults to txt
-    """
-    # uses the method Path.home() to find the home directory in any OS
-    output_folder = home_folder + subfolder  # appends a subdirectory within it.
-    filename = basename + '.' + extension  # defines the filename the output is to be saved in
-    output_path = output_folder + filename  # creates the output path
-    return output_path
 
 def execute_time_step(data, rope, i):
     """This function carries out the update process for the animation.  
@@ -95,7 +75,7 @@ def configure_animation(frame_count = 125, fps = 25):
     calling process.
 
     Keyword Args:
-        frame_count (number): Intended number of frames the animation will 
+        frame_count (number): Intended number of frames the animation 
             will run for. After this time, the animation will loop
             Defaults to 125
         fps (number): Intended number of frames per second in the
@@ -275,37 +255,34 @@ def extract_position(data, i=0, other=2):
     return x_positions, y_positions
 
 
-def get_file_name(extension="txt"):
-    """This function reads the filename from the sytem arguments and 
-    captures some of the most common errors.  It does not cover more
-    subtle errors that a user might cause.
-    Args:
-        extension (string): a string containing the extension for the
-            type of file that is sought
+def check_args():
+    """This function reads and validates the command line arguments.
+    Expects an input CSV file and an output GIF path.
 
     Returns:
-        filename (string): a string that should contain a file of 
-            the type specified in the argument
+        input_file (string): path to the input CSV file
+        output_file (string): path to save the output GIF
     """
-    # tries to read the filename from the system arguments
-    try:
-        filename = sys.argv[1]
-    # if there aren't enough arguments
-    except IndexError:
-        # explain the error
-        print("You must specify a file to plot.\nCorrect Useage: \n\t{} [FILENAME].{}".format(sys.argv[0], extension))
-        # exit the program with error status
+    # checks for the correct number of arguments
+    if len(sys.argv) == 3:
+        input_file = sys.argv[1]
+        output_file = sys.argv[2]
+    elif len(sys.argv) == 2:
+        # if only input is given, default output to same directory
+        input_file = sys.argv[1]
+        output_file = input_file.replace('.csv', '.gif')
+    else:
+        print("ERROR: Incorrect number of arguments!")
+        print("Correct use: python3 {} [INPUT_CSV] [OUTPUT_GIF]".format(sys.argv[0]))
+        print("Example: python3 {} week5/output/string_wave.csv week5/output/string_wave.gif".format(sys.argv[0]))
         exit(-1)
 
-    # if the extension of the file is not csv
-    if ((filename.split('.')[-1])!=extension):
-        # explain the error
-        print("The file you have specified, {} does not appear to be a {} file.".format(filename, extension))
-        # exit the program with error status
+    # checks the input file has csv extension
+    if not input_file.endswith('.csv'):
+        print("The file you have specified, {} does not appear to be a csv file.".format(input_file))
         exit(-1)
 
-    # in other circumstances, return the filename
-    return filename
+    return input_file, output_file
 
 
 def main():
@@ -313,11 +290,11 @@ def main():
     Using a main function instead of executing directly in the global 
     namespace allows for local variables and better control of scope.
     """
-    # gets the filename from the command line
-    filename = get_file_name("csv")
+    # gets the input and output paths from the command line
+    input_file, output_file = check_args()
 
     # gets the data and its dimensions from the file
-    data, num_positions, num_times = get_data(filename)
+    data, num_positions, num_times = get_data(input_file)
 
     # sets up the variables to manage the animation
     times, interval, fps = configure_animation(frame_count=num_times)
@@ -329,15 +306,14 @@ def main():
     fig, rope = configure_plot(x_positions, y_positions)
 
     # initialises the python animation 
-    ani = animation.FuncAnimation(fig, animate, num_times, interval=interval, blit=True, # mandatory animation arguments
-                                  fargs=(data, rope)) # arguments to the animate function
+    ani = animation.FuncAnimation(fig, animate, num_times, interval=interval, blit=True,
+                                  fargs=(data, rope))
 
-    # saves the animation to disk
-    filename = generate_path(basename = 'animate_string_file', extension = 'gif')
-    ani.save(filename=filename, writer="pillow", fps=fps)
+    # saves the animation to the user specified output path
+    ani.save(filename=output_file, writer="pillow", fps=fps)
+    print("Animation saved to {}".format(output_file))
 
 
 # we use this convention to ensure that if we import functions from this script, it is not executed
 if __name__ == "__main__":
-    main() # this is a good practice to get used to
-
+    main()
