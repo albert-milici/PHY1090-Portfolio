@@ -1,11 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
+// struct to hold parsed command line arguments
+typedef struct {
+
+	int points;
+	int cycles;
+	int samples;
+	char output_path[256];
+	
+} Args;
+
 // declares the functions that will be called within main
-// note how declaration lines are similar to the initial line
-// of a function definition, but with a semicolon at the end;
-int check_args(int argc, char **argv);
+Args check_args(int argc, char **argv);
 void initialise_vector(double vector[], int size, double initial);
 void print_vector(double vector[], int size);
 int sum_vector(int vector[], int size);
@@ -16,14 +25,12 @@ void print_header(FILE** p_out_file, int points);
 
 int main(int argc, char **argv)
 {
-	// declare and initialise the numerical argument variable
-	int points = check_args(argc, argv);
+	// parses command line arguments into a struct
+	Args args = check_args(argc, argv);
 
-	// creates variables for the vibration
-	int cycles = 5; // number of cycles to show
-	int samples = 25; // sampling rate in samples per cycle
-	int time_steps = cycles * samples + 1; // total timesteps
-	double step_size = 1.0/samples;
+	// calculates derived values from the arguments
+	int time_steps = args.cycles * args.samples + 1;
+	double step_size = 1.0 / args.samples;
 
 	// creates a vector for the time stamps in the data
 	double* time_stamps = (double*) malloc(time_steps * sizeof(double));
@@ -31,26 +38,26 @@ int main(int argc, char **argv)
 	generate_timestamps(time_stamps, time_steps, step_size);
 
 	// creates a vector variable for the current positions
-	double* positions = (double*) malloc(points * sizeof(double));
+	double* positions = (double*) malloc(args.points * sizeof(double));
 	// and initialises every element to zero
-	initialise_vector(positions, points, 0.0);
+	initialise_vector(positions, args.points, 0.0);
 
-	// creates a file
+	// opens the output file at the user specified path
 	FILE* out_file;
-     	out_file = fopen("data/string_wave.csv","w");
-	print_header(&out_file, points);
+	out_file = fopen(args.output_path, "w");
+	print_header(&out_file, args.points);
 
 	// iterates through each time step in the collection
 	for (int i = 0; i < time_steps; i++)
 	{
 		// updates the position using a function
-		update_positions(positions, points, time_stamps[i]);
+		update_positions(positions, args.points, time_stamps[i]);
 
 		// prints an index and time stamp
 		fprintf(out_file, "%d, %lf", i, time_stamps[i]);
 
 		// iterates over all of the points on the line
-		for (int j = 0; j < points; j++)
+		for (int j = 0; j < args.points; j++)
 		{
 			// prints each y-position to a file
 			fprintf(out_file, ", %lf", positions[j]);
@@ -92,7 +99,7 @@ double driver(double time)
 void update_positions(double* positions, int points, double time)
 {
 	// creates a temporary vector variable for the new positions
-        double* new_positions = (double*) malloc(points * sizeof(double));
+	double* new_positions = (double*) malloc(points * sizeof(double));
 
 	// initialises the index
 	int i = 0;
@@ -104,9 +111,9 @@ void update_positions(double* positions, int points, double time)
 	}
 	// propagates these new positions to the old ones
 	for (i = 0; i < points; i++)
-        {
-                positions[i] = new_positions[i];
-        }
+	{
+		positions[i] = new_positions[i];
+	}
 
 	// frees the temporary vector
 	free(new_positions);
@@ -161,27 +168,33 @@ void print_vector(double vector[], int size)
 	}
 }
 
-// defines a function that checks your arguments to make sure they'll do what you need
-int check_args(int argc, char **argv)
+// parses command line arguments into a Args struct
+Args check_args(int argc, char **argv)
 {
-	// declare and initialise the numerical argument
-	int num_arg = 0;
+	// creates and initialises the arguments struct
+	Args args;
+	args.points = 0;
+	args.cycles = 0;
+	args.samples = 0;
+	memset(args.output_path, 0, sizeof(args.output_path));
 
 	// check the number of arguments
-	if (argc == 2) // program name and numerical argument
+	if (argc == 5) // program name, points, cycles, samples, output path
 	{
-		// declare and initialise the numerical argument
-		num_arg = atoi(argv[1]);
+		args.points = atoi(argv[1]);
+		args.cycles = atoi(argv[2]);
+		args.samples = atoi(argv[3]);
+		strncpy(args.output_path, argv[4], sizeof(args.output_path) - 1);
 	}
 	else // the number of arguments is incorrect
 	{
 		// raise an error
-		fprintf(stderr, "ERROR: You did not provide a numerical argument!\n");
-		fprintf(stderr, "Correct use: %s [NUMBER]\n", argv[0]);
+		fprintf(stderr, "ERROR: Incorrect number of arguments!\n");
+		fprintf(stderr, "Correct use: %s [POINTS] [CYCLES] [SAMPLES] [OUTPUT_PATH]\n", argv[0]);
+		fprintf(stderr, "Example: %s 50 5 25 week5/output/string_wave.csv\n", argv[0]);
 
 		// and exit COMPLETELY
-		exit (-1);
+		exit(-1);
 	}
-	return num_arg;
+	return args;
 }
-
