@@ -19,7 +19,7 @@ Args check_args(int argc, char **argv);
 void initialise_vector(double vector[], int size, double initial);
 void print_vector(double vector[], int size);
 int sum_vector(int vector[], int size);
-void update_positions(double* positions, int points, double time);
+void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double time);
 int generate_timestamps(double* time_stamps, int time_steps, double step_size);
 double driver(double time);
 void print_header(FILE** p_out_file, int points);
@@ -43,6 +43,14 @@ int main(int argc, char **argv)
 	// and initialises every element to zero
 	initialise_vector(positions, args.points, 0.0);
 
+	// creates a vector for the velocities and initialises to zero
+	double* velocities = (double*) malloc(args.points * sizeof(double));
+	initialise_vector(velocities, args.points, 0.0);
+
+	// spring constant and mass for the spring force model
+	double k = 50.0;
+	double m = 1.0;
+
 	// opens the output file at the user specified path
 	FILE* out_file;
 	out_file = fopen(args.output_path, "w");
@@ -55,7 +63,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < time_steps; i++)
 	{
 		// updates the position using a function
-		update_positions(positions, args.points, time_stamps[i]);
+		update_positions(positions, velocities, args.points, step_size, k, m, time_stamps[i]);
 
 		// prints an index and time stamp
 		fprintf(out_file, "%d, %lf", i, time_stamps[i]);
@@ -106,28 +114,30 @@ double driver(double time)
 	return(value);
 }
 
-// defines a function to update the positions
-void update_positions(double* positions, int points, double time)
+// updates positions using spring forces between neighbouring points
+void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double time)
 {
-	// creates a temporary vector variable for the new positions
-	double* new_positions = (double*) malloc(points * sizeof(double));
+	// point 0 is driven by the sine function
+	positions[0] = driver(time);
+	velocities[0] = 0.0;
 
-	// initialises the index
-	int i = 0;
-	new_positions[i] = driver(time);
-	// creates new positions by setting value of previous element 
-	for (i = 1; i < points; i++)
+	// updates interior points using spring force f = k * (left - 2*pos + right)
+	for (int i = 1; i < points - 1; i++)
 	{
-		new_positions[i] = positions[i-1];
-	}
-	// propagates these new positions to the old ones
-	for (i = 0; i < points; i++)
-	{
-		positions[i] = new_positions[i];
+		double left = positions[i - 1];
+		double right = positions[i + 1];
+
+		// spring force divided by mass gives acceleration
+		double acceleration = (k / m) * (left - 2.0 * positions[i] + right);
+
+		// euler integration to update velocity then position
+		velocities[i] += acceleration * dt;
+		positions[i] += velocities[i] * dt;
 	}
 
-	// frees the temporary vector
-	free(new_positions);
+	// last point is pinned at zero
+	positions[points - 1] = 0.0;
+	velocities[points - 1] = 0.0;
 }
 
 // defines a set of timestamps
