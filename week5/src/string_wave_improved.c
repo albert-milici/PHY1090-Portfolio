@@ -19,7 +19,7 @@ Args check_args(int argc, char **argv);
 void initialise_vector(double vector[], int size, double initial);
 void print_vector(double vector[], int size);
 int sum_vector(int vector[], int size);
-void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double time);
+void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double time);
 int generate_timestamps(double* time_stamps, int time_steps, double step_size);
 double driver(double time);
 void print_header(FILE** p_out_file, int points);
@@ -48,8 +48,11 @@ int main(int argc, char **argv)
 	initialise_vector(velocities, args.points, 0.0);
 
 	// spring constant and mass for the spring force model
-	double k = 50.0;
+	double k = 1.0;
 	double m = 1.0;
+
+	double length = 50.0;
+	double dx = length / (args.points - 1);
 
 	// opens the output file at the user specified path
 	FILE* out_file;
@@ -63,7 +66,9 @@ int main(int argc, char **argv)
 	for (int i = 0; i < time_steps; i++)
 	{
 		// updates the position using a function
-		update_positions(positions, velocities, args.points, step_size, k, m, time_stamps[i]);
+		// update_positions(positions, velocities, args.points, step_size, k, m, time_stamps[i]);
+
+		update_positions(positions, velocities, args.points, step_size, k, m, dx, time_stamps[i]);
 
 		// prints an index and time stamp
 		fprintf(out_file, "%d, %lf", i, time_stamps[i]);
@@ -114,32 +119,25 @@ double driver(double time)
 	return(value);
 }
 
-// updates positions using spring forces between neighbouring points
-void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double time)
+
+void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double time)
 {
-	// point 0 is driven by the sine function
 	positions[0] = driver(time);
 	velocities[0] = 0.0;
 
-	// updates interior points using spring force f = k * (left - 2*pos + right)
 	for (int i = 1; i < points - 1; i++)
 	{
 		double left = positions[i - 1];
 		double right = positions[i + 1];
 
-		// // spring force divided by mass gives acceleration
-		// double acceleration = (k / m) * (left - 2.0 * positions[i] + right);
+		// spring force with correct spatial derivative
+		double damping = 0.5;
+		double acceleration = (k / m) * (left - 2.0 * positions[i] + right) / (dx * dx) - damping * velocities[i];
 
-		// spring force plus damping force
-		double damping = 0.1; // damping coefficient
-		double acceleration = (k / m) * (left - 2.0 * positions[i] + right) - damping * velocities[i];
-
-		// euler integration to update velocity then position
 		velocities[i] += acceleration * dt;
 		positions[i] += velocities[i] * dt;
 	}
 
-	// last point is pinned at zero
 	positions[points - 1] = 0.0;
 	velocities[points - 1] = 0.0;
 }
