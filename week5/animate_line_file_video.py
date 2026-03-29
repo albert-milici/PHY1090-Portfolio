@@ -7,7 +7,7 @@ import sys
 
 
 # target fps for playback
-TARGET_FPS = 50
+TARGET_FPS = 25
 
 
 def configure_plot(x_positions, y_positions,y_peak):
@@ -26,9 +26,10 @@ def configure_plot(x_positions, y_positions,y_peak):
     """
     # figsize * dpi gives output pixel dimensions
     # (12, 6.75) * 150 = 1800 x 1012 — close to 1080p, no more blur
-    fig, ax1 = plt.subplots(1, 1, figsize=(12, 6.75), dpi=150)
+    # fig, ax1 = plt.subplots(1, 1, figsize=(12, 6.75), dpi=150)
+    fig, ax1 = plt.subplots(1, 1, figsize=(10, 5.625), dpi=100)
 
-    fig.suptitle('Simulation of Vibrations in a string')
+    # fig.suptitle('Simulation of Vibrations in a string')
 
     # lock y limits (set_ylim already does this) AND x limits explicitly
     # so blit doesn't waste time re-checking autoscale bounds every frame
@@ -36,10 +37,14 @@ def configure_plot(x_positions, y_positions,y_peak):
     ax1.set_ylim(-y_peak, y_peak)
     ax1.set_xlim(x_positions[0], x_positions[-1])
 
-    rope, = ax1.plot(x_positions, y_positions, "-", markersize=2,
-                     color="green", label="points on string")
+    ax1.tick_params(axis='both', labelsize=20)
+    ax1.set_xlabel('position', fontsize=20)
+    ax1.set_ylabel('displacement', fontsize=20)
 
-    ax1.legend(handles=[rope], bbox_to_anchor=(0, 0), loc='upper left')
+    rope, = ax1.plot(x_positions, y_positions, "-", markersize=2,
+                     color="green",linewidth=3, label="points on string")
+
+    ax1.legend(handles=[rope], loc='upper left',fontsize=15)
 
     return fig, rope
 
