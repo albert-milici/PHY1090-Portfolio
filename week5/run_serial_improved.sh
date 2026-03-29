@@ -5,15 +5,15 @@ BIN="bin/string_wave_improved"
 CSV="week5/output/string_wave_improved.csv"
 MP4="week5/output/string_wave_improved.mp4"
 GIF="week5/output/string_wave_improved.gif"
-ANIM="week5/animate_line_file_video.py"
+ANIM="week5/src/animate_line_file_video.py"
 
 # simulation parameters
 POINTS=${1:-500}
 CYCLES=${2:-20}
 SAMPLES=${3:-100}
-K=${4:-2.0}
+K=${4:-10.0}
 M=${5:-0.5}
-DAMPING=${6:-0.5}
+DAMPING=${6:-3}
 LENGTH=${7:-50.0}
 
 # compiles if needed
@@ -32,7 +32,7 @@ echo "Generating MP4..."
 python3 "$ANIM" "$CSV" "$MP4"
 
 # GIF conversion parameters
-GIF_SPEEDUP=4       # playback speed multiplier (2 = 2x faster, 4 = 4x faster, etc)
+GIF_SPEEDUP=3       # playback speed multiplier (2 = 2x faster, 4 = 4x faster, etc)
 GIF_FPS=25          # frames per second in the final GIF
 GIF_WIDTH=1000       # output width in pixels (height auto-scales)
 

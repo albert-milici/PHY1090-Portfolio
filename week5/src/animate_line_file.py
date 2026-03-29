@@ -171,7 +171,7 @@ def configure_plot(x_positions, y_positions):
     ax1.set_ylim(-1.1, 1.1)
 
     # creates the plot which will be animated
-    rope, = ax1.plot(x_positions, y_positions, "o", markersize=5, color="green", label="points on string")
+    rope, = ax1.plot(x_positions, y_positions, "o--", markersize=2, color="green", label="points on string")
 
     # creates the legend entry
     ax1.legend(handles=[rope], bbox_to_anchor=(0, 0), loc='upper left')
@@ -297,7 +297,7 @@ def main():
     data, num_positions, num_times = get_data(input_file)
 
     # sets up the variables to manage the animation
-    times, interval, fps = configure_animation(frame_count=num_times)
+    times, interval, fps = configure_animation(frame_count=num_times, fps=100)
 
     # sets up the points on the string 
     x_positions, y_positions = extract_position(data)

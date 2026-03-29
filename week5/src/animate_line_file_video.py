@@ -27,7 +27,7 @@ def configure_plot(x_positions, y_positions,y_peak):
     # figsize * dpi gives output pixel dimensions
     # (12, 6.75) * 150 = 1800 x 1012 — close to 1080p, no more blur
     # fig, ax1 = plt.subplots(1, 1, figsize=(12, 6.75), dpi=150)
-    fig, ax1 = plt.subplots(1, 1, figsize=(10, 5.625), dpi=100)
+    fig, ax1 = plt.subplots(1, 1, figsize=(10, 5.625), dpi=100, layout='constrained')
 
     # fig.suptitle('Simulation of Vibrations in a string')
 
