@@ -127,8 +127,12 @@ void update_positions(double* positions, double* velocities, int points, double 
 		double left = positions[i - 1];
 		double right = positions[i + 1];
 
-		// spring force divided by mass gives acceleration
-		double acceleration = (k / m) * (left - 2.0 * positions[i] + right);
+		// // spring force divided by mass gives acceleration
+		// double acceleration = (k / m) * (left - 2.0 * positions[i] + right);
+
+		// spring force plus damping force
+		double damping = 0.1; // damping coefficient
+		double acceleration = (k / m) * (left - 2.0 * positions[i] + right) - damping * velocities[i];
 
 		// euler integration to update velocity then position
 		velocities[i] += acceleration * dt;
