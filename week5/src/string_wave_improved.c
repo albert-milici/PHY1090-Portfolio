@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 	initialise_vector(velocities, args.points, 0.0);
 
 	// spring constant and mass for the spring force model
-	double k = 1.0;
+	double k = 20.0;
 	double m = 1.0;
 
 	double length = 50.0;
@@ -122,22 +122,36 @@ double driver(double time)
 
 void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double time)
 {
+	// point 0 is driven by the sine function
 	positions[0] = driver(time);
 	velocities[0] = 0.0;
+
+	// computes all accelerations first before updating anything
+	double* accelerations = (double*) malloc(points * sizeof(double));
+	accelerations[0] = 0.0;
+	accelerations[points - 1] = 0.0;
 
 	for (int i = 1; i < points - 1; i++)
 	{
 		double left = positions[i - 1];
 		double right = positions[i + 1];
 
-		// spring force with correct spatial derivative
-		double damping = 0.5;
-		double acceleration = (k / m) * (left - 2.0 * positions[i] + right) / (dx * dx) - damping * velocities[i];
+		// spring force with damping
+		double damping = 200.0;
+		accelerations[i] = (k / m) * (left - 2.0 * positions[i] + right) / (dx * dx) - damping * velocities[i];
+	}
 
-		velocities[i] += acceleration * dt;
+	// updates all velocities then all positions
+	for (int i = 1; i < points - 1; i++)
+	{
+		velocities[i] += accelerations[i] * dt;
 		positions[i] += velocities[i] * dt;
 	}
 
+	// frees the temporary array
+	free(accelerations);
+
+	// last point is pinned at zero
 	positions[points - 1] = 0.0;
 	velocities[points - 1] = 0.0;
 }
