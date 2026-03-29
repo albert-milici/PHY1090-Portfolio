@@ -17,8 +17,6 @@ typedef struct {
 // declares the functions that will be called within main
 Args check_args(int argc, char **argv);
 void initialise_vector(double vector[], int size, double initial);
-void print_vector(double vector[], int size);
-int sum_vector(int vector[], int size);
 void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double time);
 int generate_timestamps(double* time_stamps, int time_steps, double step_size);
 double driver(double time);
@@ -166,22 +164,6 @@ int generate_timestamps(double* timestamps, int time_steps, double step_size)
 	return time_steps;
 }
 
-// defines a function to sum a vector of ints into another int
-int sum_vector(int vector[], int size)
-{
-	// creates a variable to hold the sum
-	int sum = 0;
-
-	// iterates through the vector
-	for (int i = 0; i < size; i++)
-	{
-		// sets the elements of the vector to the initial value
-		sum += vector[i];
-	}
-
-	// returns the sum
-	return sum;
-}
 
 // defines a function to initialise all values in a vector to a given inital value
 void initialise_vector(double vector[], int size, double initial)
@@ -194,16 +176,6 @@ void initialise_vector(double vector[], int size, double initial)
 	}
 }
 
-// defines a function to print a vector of ints
-void print_vector(double vector[], int size)
-{
-	// iterates through the vector
-	for (int i = 0; i < size; i++)
-	{
-		// prints the elements of the vector to the screen
-		printf("%d, %lf\n", i, vector[i]);
-	}
-}
 
 // parses command line arguments into a Args struct
 Args check_args(int argc, char **argv)
