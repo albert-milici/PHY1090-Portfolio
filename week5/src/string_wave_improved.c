@@ -6,18 +6,23 @@
 
 // struct to hold parsed command line arguments
 typedef struct {
-
 	int points;
 	int cycles;
 	int samples;
 	char output_path[256];
-	
+
+	// physical variables
+	double k;
+	double m;
+	double damping;
+	double length;
+
 } Args;
 
 // declares the functions that will be called within main
 Args check_args(int argc, char **argv);
 void initialise_vector(double vector[], int size, double initial);
-void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double time);
+void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double damping, double time);
 int generate_timestamps(double* time_stamps, int time_steps, double step_size);
 double driver(double time);
 void print_header(FILE** p_out_file, int points);
@@ -45,11 +50,11 @@ int main(int argc, char **argv)
 	double* velocities = (double*) malloc(args.points * sizeof(double));
 	initialise_vector(velocities, args.points, 0.0);
 
-	// spring constant and mass for the spring force model
-	double k = 20.0;
-	double m = 1.0;
+	// physical variables
+	double k = args.k;
+	double m = args.m;
 
-	double length = 50.0;
+	double length = args.length;
 	double dx = length / (args.points - 1);
 
 	// opens the output file at the user specified path
@@ -66,7 +71,7 @@ int main(int argc, char **argv)
 		// updates the position using a function
 		// update_positions(positions, velocities, args.points, step_size, k, m, time_stamps[i]);
 
-		update_positions(positions, velocities, args.points, step_size, k, m, dx, time_stamps[i]);
+		update_positions(positions, velocities, args.points, step_size, k, m, dx,args.damping, time_stamps[i]);
 
 		// prints an index and time stamp
 		fprintf(out_file, "%d, %lf", i, time_stamps[i]);
@@ -118,7 +123,7 @@ double driver(double time)
 }
 
 
-void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double time)
+void update_positions(double* positions, double* velocities, int points, double dt, double k, double m, double dx, double damping, double time)
 {
 	// point 0 is driven by the sine function
 	positions[0] = driver(time);
@@ -135,7 +140,7 @@ void update_positions(double* positions, double* velocities, int points, double 
 		double right = positions[i + 1];
 
 		// spring force with damping
-		double damping = 200.0;
+		// double damping = 200.0;
 		accelerations[i] = (k / m) * (left - 2.0 * positions[i] + right) / (dx * dx) - damping * velocities[i];
 	}
 
@@ -180,29 +185,38 @@ void initialise_vector(double vector[], int size, double initial)
 // parses command line arguments into a Args struct
 Args check_args(int argc, char **argv)
 {
-	// creates and initialises the arguments struct
 	Args args;
 	args.points = 0;
 	args.cycles = 0;
 	args.samples = 0;
 	memset(args.output_path, 0, sizeof(args.output_path));
 
+	// default physical parameters
+	args.k = 2.0;
+	args.m = 0.5;
+	args.damping = 0.5;
+	args.length = 50.0;
+
 	// check the number of arguments
-	if (argc == 5) // program name, points, cycles, samples, output path
+	if (argc >= 5 && argc <= 9)
 	{
 		args.points = atoi(argv[1]);
 		args.cycles = atoi(argv[2]);
 		args.samples = atoi(argv[3]);
 		strncpy(args.output_path, argv[4], sizeof(args.output_path) - 1);
-	}
-	else // the number of arguments is incorrect
-	{
-		// raise an error
-		fprintf(stderr, "ERROR: Incorrect number of arguments!\n");
-		fprintf(stderr, "Correct use: %s [POINTS] [CYCLES] [SAMPLES] [OUTPUT_PATH]\n", argv[0]);
-		fprintf(stderr, "Example: %s 50 5 25 week5/output/string_wave.csv\n", argv[0]);
 
-		// and exit COMPLETELY
+		// optional physical parametars 
+		if (argc >= 6) { args.k = atof(argv[5]); }
+		if (argc >= 7) { args.m = atof(argv[6]); }
+		if (argc >= 8) { args.damping = atof(argv[7]); }
+		if (argc >= 9) { args.length = atof(argv[8]); }
+	}
+	else
+	{
+		fprintf(stderr, "ERROR: Incorrect number of arguments!\n");
+		fprintf(stderr, "Correct use: %s [POINTS] [CYCLES] [SAMPLES] [OUTPUT_PATH] [K] [M] [DAMPING] [LENGTH]\n", argv[0]);
+		fprintf(stderr, "Example: %s 500 20 400 output.csv 2.0 0.5 0.5 50.0\n", argv[0]);
+		fprintf(stderr, "Physical parameters are optional and default to k=2.0 m=0.5 damping=0.5 length=50.0\n");
 		exit(-1);
 	}
 	return args;
