@@ -2,9 +2,9 @@
 
 # simple bash script to measure how time changes with number of processes
 
-mpicc week3/hello_mpi.c -o bin/hello_mpi
+mpicc week3/src/hello_mpi.c -o bin/hello_mpi
 
-echo "processes,real,user,sys" > week3/experiment_1.csv
+echo "processes,real,user,sys" > week3/output/experiment_1.csv
 
 # for np in $(seq 1 8); do
 for np in 1 2 3 4 5 6 7 8; do
@@ -15,7 +15,7 @@ for np in 1 2 3 4 5 6 7 8; do
         /user/ {user=$2}
         /sys/  {sys=$2; print np","real","user","sys}
 
-    ' >> week3/experiment_1.csv
+    ' >> week3/output/experiment_1.csv
 done
 
 echo "Results saved as experiment_1.csv"

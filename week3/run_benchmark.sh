@@ -1,13 +1,13 @@
 #!/bin/bash
 # benchmarks serial vs parallel vector addition
 
-OUTPUT="week3/benchmark_results.csv"
+OUTPUT="week3//output/benchmark_results.csv"
 
 echo "version,vector_size,real_time" > "$OUTPUT"
 
 # compiles both versions
-gcc week3/vector_serial.c -o bin/vector_serial
-mpicc week3/vector_mpi.c -o bin/vector_mpi
+gcc week3/src/vector_serial.c -o bin/vector_serial
+mpicc week3/src/vector_mpi.c -o bin/vector_mpi
 
 for size in 1000 10000 100000 1000000 10000000; do
 
