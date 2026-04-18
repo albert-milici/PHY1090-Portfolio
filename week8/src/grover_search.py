@@ -25,10 +25,12 @@ def tosQubit(name):
 
 def applyGate(gate,*names):
     global workspace
-    for name in names:
-        tosQubit(name)
-    workspace = np.reshape(workspace,(-1,gate.shape[0]))
-    np.matmul(workspace,gate.T,out=workspace)
+    if list(names) != namestack[-len(names):]:
+        for name in names:
+            tosQubit(name)
+    workspace = np.reshape(workspace,(-1,2**(len(names))))
+    subworkspace = workspace[:,-gate.shape[0]:]
+    np.matmul(subworkspace,gate.T,out=subworkspace)
 
 def probQubit(name):
     global workspace
@@ -78,6 +80,9 @@ def TOFFn_gate(ctl,result):
 X_gate = np.array([[0, 1],
                    [1, 0]])
 
+Z_gate = np.array([[1, 0],
+                   [0,-1]])
+
 H_gate = np.array([[1, 1],
                    [1,-1]]) * np.sqrt(1/2)
 
@@ -107,84 +112,3 @@ TOFF_gate = np.array([[1, 0, 0, 0, 0, 0, 0, 0],
                       [0, 0, 0, 0, 0, 0, 1, 0]])
 
 # tests
-
-
-workspace = np.array([[1.]])
-pushQubit("Q1",[1,1])
-print(np.reshape(workspace,(1,-1)))
-print(namestack)
-pushQubit("Q2",[0,1])
-print(np.reshape(workspace,(1,-1)))
-print(namestack)
-
-print(np.reshape(workspace,(1,-1)))
-print(namestack)
-tosQubit("Q1")
-print(np.reshape(workspace,(1,-1)))
-print(namestack)
-
-print(np.reshape(workspace,(1,-1)))
-print(namestack)
-applyGate(H_gate,"Q2")
-print(np.reshape(workspace,(1,-1)))
-print(namestack)
-
-
-workspace = np.array([[1.]])
-pushQubit("Q1",[1,0])
-applyGate(H_gate,"Q1")
-print("Q1 probabilities:", probQubit("Q1"))
-pushQubit("Q2",[0.6,0.8])
-print("Q2 probabilities:", probQubit("Q2"))
-print(measureQubit("Q1"), measureQubit("Q2"))
-
-
-def toffEquiv_gate(q1,q2,q3):
-    applyGate(H_gate,q3)
-    applyGate(CNOT_gate,q2,q3)
-    applyGate(Tinv_gate,q3)
-    applyGate(CNOT_gate,q1,q3)
-    applyGate(T_gate,q3)
-    applyGate(CNOT_gate,q2,q3)
-    applyGate(Tinv_gate,q3)
-    applyGate(CNOT_gate,q1,q3)
-    applyGate(T_gate,q2)
-    applyGate(T_gate,q3)
-    applyGate(H_gate,q3)
-    applyGate(CNOT_gate,q1,q2)
-    applyGate(T_gate,q1)
-    applyGate(Tinv_gate,q2)
-    applyGate(CNOT_gate,q1,q2)
-
-workspace = np.array([[1.+0j]])
-for i in range(16):
-    pushQubit("Q1",[1,1])
-    pushQubit("Q2",[1,1])
-    pushQubit("Q3",[1,0])
-    toffEquiv_gate("Q1","Q2","Q3")
-    print(measureQubit("Q1")+measureQubit("Q2")+
-          measureQubit("Q3"), end=",")
-print()
-
-workspace = np.array([[1.]])
-for i in range(20):
-    pushQubit("Q1",[1,1])
-    pushQubit("Q2",[1,1])
-    pushQubit("Q3",[1,1])
-    pushQubit("Q4",[1,0])
-    TOFF3_gate("Q1","Q2","Q3","Q4")
-    print("".join([measureQubit(q) for q in
-                   ["Q1","Q2","Q3","Q4"]]), end=",")
-print()
-
-
-workspace = np.array([[1]],dtype=np.single)
-for i in range(20):
-    pushQubit("Q1",[1,1])
-    pushQubit("Q2",[1,1])
-    pushQubit("Q3",[1,1])
-    pushQubit("Q4",[1,0])
-    TOFFn_gate(["Q1","Q2","Q3"],"Q4")
-    print("".join([measureQubit(q) for q in
-               ["Q1","Q2","Q3","Q4"]]),end=",")
-print()
