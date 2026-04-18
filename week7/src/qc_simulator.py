@@ -47,6 +47,33 @@ def measureQubit(name):
     namestack.pop()
     return str(measurement)
 
+def TOFF3_gate(q1,q2,q3,q4):
+    pushQubit("temp",[1,0])
+    applyGate(TOFF_gate,q1,q2,"temp")
+    applyGate(TOFF_gate,"temp",q3,q4)
+    applyGate(TOFF_gate,q1,q2,"temp")
+    measureQubit("temp")
+
+def TOFFn_gate(ctl,result):
+    n = len(ctl)
+    if n == 0:
+        applyGate(X_gate,result)
+    if n == 1:
+        applyGate(CNOT_gate,ctl[0],result)
+    elif n == 2:
+        applyGate(TOFF_gate,ctl[0],ctl[1],result)
+    elif n > 2:
+        k=0
+        while "temp"+str(k) in namestack:
+            k=k+1
+        temp = "temp"+str(k)
+        pushQubit(temp,[1,0])
+        applyGate(TOFF_gate,ctl[0],ctl[1],temp)
+        ctl.append(temp)
+        TOFFn_gate(ctl[2:],result)
+        applyGate(TOFF_gate,ctl[0],ctl[1],temp)
+        measureQubit(temp)
+
 
 X_gate = np.array([[0, 1],
                    [1, 0]])
@@ -137,4 +164,27 @@ for i in range(16):
     toffEquiv_gate("Q1","Q2","Q3")
     print(measureQubit("Q1")+measureQubit("Q2")+
           measureQubit("Q3"), end=",")
+print()
+
+workspace = np.array([[1.]])
+for i in range(20):
+    pushQubit("Q1",[1,1])
+    pushQubit("Q2",[1,1])
+    pushQubit("Q3",[1,1])
+    pushQubit("Q4",[1,0])
+    TOFF3_gate("Q1","Q2","Q3","Q4")
+    print("".join([measureQubit(q) for q in
+                   ["Q1","Q2","Q3","Q4"]]), end=",")
+print()
+
+
+workspace = np.array([[1]],dtype=np.single)
+for i in range(20):
+    pushQubit("Q1",[1,1])
+    pushQubit("Q2",[1,1])
+    pushQubit("Q3",[1,1])
+    pushQubit("Q4",[1,0])
+    TOFFn_gate(["Q1","Q2","Q3"],"Q4")
+    print("".join([measureQubit(q) for q in
+               ["Q1","Q2","Q3","Q4"]]),end=",")
 print()
