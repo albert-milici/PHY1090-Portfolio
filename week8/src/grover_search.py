@@ -76,6 +76,35 @@ def TOFFn_gate(ctl,result):
         applyGate(TOFF_gate,ctl[0],ctl[1],temp)
         measureQubit(temp)
 
+def zero_phaseOracle(qubits):
+    for qubit in qubits:
+        applyGate(X_gate,qubit)
+    applyGate(Z_gate,*namestack)
+    for qubit in qubits:
+        applyGate(X_gate,qubit)
+
+def sample_phaseOracle(qubits):
+    applyGate(X_gate,qubits[1])
+    applyGate(Z_gate,*namestack)
+    applyGate(X_gate,qubits[1])
+
+def groverSearch(n, printProb=True):
+    optimalTurns = int(np.pi/4*np.sqrt(2**n)-1/2)
+    qubits = list(range(n))
+    for qubit in qubits:
+        pushQubit(qubit,[1,1])
+    for k in range(optimalTurns):
+        sample_phaseOracle(qubits)
+        for qubit in qubits:
+            applyGate(H_gate,qubit)
+        zero_phaseOracle(qubits)
+        for qubit in qubits:
+            applyGate(H_gate,qubit)
+        if printProb:
+            print(probQubit(qubits[0]))
+    for qubit in reversed(qubits):
+        print(measureQubit(qubit),end="")
+
 
 X_gate = np.array([[0, 1],
                    [1, 0]])
@@ -112,3 +141,8 @@ TOFF_gate = np.array([[1, 0, 0, 0, 0, 0, 0, 0],
                       [0, 0, 0, 0, 0, 0, 1, 0]])
 
 # tests
+
+
+workspace = np.array([[1.]])
+groverSearch(6)
+print()
