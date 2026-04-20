@@ -2,17 +2,16 @@
 
 ## How to build and run
 
-Compile the C programs from the repo root with the commands below. This also creates the `bin` and `data` directories used for compiled binaries and generated files.
+Compile the C programs from the repo root with the commands below. Assumes the `bin` and `data` directories already exist.
 
 ```bash
-mkdir -p bin data
-
 gcc week2/src/hello_world.c -o bin/hello_world
 gcc week2/src/repeat_adder.c -o bin/repeat_adder
 gcc week2/src/time_print.c -o bin/time_print -std=c11
 gcc week2/src/time_write.c -o bin/time_write -std=c11
 gcc week2/src/time_read.c -o bin/time_read -std=c11
 ```
+Note `-std=c11` might be needed without it, timespec_get may produce a warning or error depending on your gcc version's default standard.
 
 Run the Python programs with:
 
